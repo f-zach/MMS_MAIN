@@ -92,7 +92,7 @@ String MAINmodule::makeDataString(String seperator)
 
     for (int i = 0; i < _amountSensorValues; ++i)
     {
-        dataString += SensorData[i] + seperator;
+        dataString += String(SensorData[i]) + seperator;
     }
 
     return dataString;

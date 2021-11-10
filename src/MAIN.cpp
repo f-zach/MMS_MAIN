@@ -16,12 +16,18 @@ void MAINmodule::config(int amountSensorValues, int mode)
 
     if (amountSensorValues > 0)
     {
-        float SensorData[amountSensorValues];
-        bool _arrayConfigured = true;
+        _amountSensorValues = amountSensorValues;
     }
     else
     {
-        bool _arrayConfigured = false;
+        delay(3000);
+        Serial.println("Die Menge der Sensoren kann nicht null sein. Setzen sie einen Wert größer null.");
+
+        do
+        {
+            errorBlink(1);
+        } while (1);
+        
     }
 
     if (mode == 1)
@@ -79,18 +85,14 @@ float MAINmodule::readEnvP()
     return envPressure;
 }
 
-String MAINmodule::makeDataString(float dataArray[], String seperator)
+String MAINmodule::makeDataString(String seperator)
 {
-    if (_arrayConfigured)
-    {
-        dataArray = sensorData;
-    }
 
     String dataString = "";
 
-    for (int i = 0; i < sizeof(dataArray) / sizeof(float); ++i)
+    for (int i = 0; i < _amountSensorValues; ++i)
     {
-        dataString += dataArray[i] + seperator;
+        dataString += SensorData[i] + seperator;
     }
 
     return dataString;

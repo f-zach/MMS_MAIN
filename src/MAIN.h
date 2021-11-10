@@ -11,10 +11,11 @@ private:
     int _busyLED; 
     int _CSpinT;
     int _I2CaddressP;
+    int _amountSensorValues;
     long _tMeasurementStart;
     long _tErrLED = 1000;
     bool _errLEDon = false;
-    bool _arrayConfigured = false;
+
 
 public:
     MAINmodule(int CSpinT, int I2CaddressP, int errLED = 5, int busyLED = 6);
@@ -29,7 +30,7 @@ public:
     float readEnvP();
     float envTemperature;
     float envPressure;
-    float SensorData[]
+    float SensorData[20]
     bool Tmeasuring;
     bool fault;
     String dataString

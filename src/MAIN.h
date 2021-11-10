@@ -25,15 +25,15 @@ public:
     void notBusy();
     void errorBlink(bool error);
     void startTmeasurement();
-    String makeDataString(float dataArray[], String seperator = "\t");
+    String makeDataString(String seperator = "\t");
     float readEnvT();
     float readEnvP();
     float envTemperature;
     float envPressure;
-    float SensorData[20]
+    float SensorData[20];
     bool Tmeasuring;
     bool fault;
-    String dataString
+    String dataString;
     BME280 sensorP;
     MAX31865 sensorT;
 

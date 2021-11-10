@@ -92,8 +92,14 @@ String MAINmodule::makeDataString(String seperator)
 
     for (int i = 0; i < _amountSensorValues; ++i)
     {
-        dataString += String(SensorData[i]) + seperator;
+        dataString += String(SensorData[i],5) + seperator;
     }
+
+    if (mode == 1)
+    {
+        dataString += String(envPressure,5) + seperator + String(envTemperature,5);
+    }
+    
 
     return dataString;
 }

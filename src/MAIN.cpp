@@ -97,7 +97,7 @@ String MAINmodule::makeDataString(String seperator)
         dataString += String(SensorData[i],5) + seperator;
     }
 
-    if (mode == 1)
+    if (_mode == 1)
     {
         dataString += String(envPressure,5) + seperator + String(envTemperature,5);
     }

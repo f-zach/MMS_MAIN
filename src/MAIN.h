@@ -11,6 +11,7 @@ private:
     int _busyLED; 
     int _CSpinT;
     int _I2CaddressP;
+    int _mode;
     int _amountSensorValues;
     long _tMeasurementStart;
     long _tErrLED = 1000;

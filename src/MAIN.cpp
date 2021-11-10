@@ -9,10 +9,20 @@ MAINmodule::MAINmodule(int CSpinT, int I2CaddressP, int errLED, int busyLED)
     _I2CaddressP = I2CaddressP;
 }
 
-void MAINmodule::config(int mode)
+void MAINmodule::config(int amountSensorValues, int mode)
 {
     pinMode(_errLED, OUTPUT);
     pinMode(_busyLED, OUTPUT);
+
+    if (amountSensorValues > 0)
+    {
+        float SensorData[amountSensorValues];
+        bool _arrayConfigured = true;
+    }
+    else
+    {
+        bool _arrayConfigured = false;
+    }
 
     if (mode == 1)
     {
@@ -69,9 +79,26 @@ float MAINmodule::readEnvP()
     return envPressure;
 }
 
+String MAINmodule::makeDataString(float dataArray[], String seperator)
+{
+    if (_arrayConfigured)
+    {
+        dataArray = sensorData;
+    }
+
+    String dataString = "";
+
+    for (int i = 0; i < sizeof(dataArray) / sizeof(float); ++i)
+    {
+        dataString += dataArray[i] + seperator;
+    }
+
+    return dataString;
+}
+
 bool MAINmodule::faultDetection()
 {
-    if(sensorP.begin() != 1)
+    if (sensorP.begin() != 1)
     {
         Serial.println("Der Umgebungsdrucksensor konnte nich initalisiert werden. Verkableung überprüfen");
         fault = true;
@@ -80,28 +107,27 @@ bool MAINmodule::faultDetection()
     {
         fault = false;
     }
-    
 }
 
 void MAINmodule::errorBlink(bool error)
 {
-    if(error && (millis()-_tErrLED >= 1000))
+    if (error && (millis() - _tErrLED >= 1000))
     {
-        if(_errLEDon)
+        if (_errLEDon)
         {
-        digitalWriteFast(_errLED,LOW);
-        _tErrLED = millis();
-        _errLEDon = false;
+            digitalWriteFast(_errLED, LOW);
+            _tErrLED = millis();
+            _errLEDon = false;
         }
-        else if(!_errLEDon)
+        else if (!_errLEDon)
         {
-            digitalWriteFast(_errLED,HIGH);
+            digitalWriteFast(_errLED, HIGH);
             _tErrLED = millis();
             _errLEDon = true;
         }
     }
-    else if(!error)
+    else if (!error)
     {
-        digitalWriteFast(_errLED,LOW);
+        digitalWriteFast(_errLED, LOW);
     }
 }

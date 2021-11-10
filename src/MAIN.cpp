@@ -14,6 +14,8 @@ void MAINmodule::config(int amountSensorValues, int mode)
     pinMode(_errLED, OUTPUT);
     pinMode(_busyLED, OUTPUT);
 
+    _mode = mode;
+
     if (amountSensorValues > 0)
     {
         _amountSensorValues = amountSensorValues;

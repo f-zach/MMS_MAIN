@@ -174,16 +174,8 @@ void MAINmodule::printDataLAN(String dataString)
             if (c == '\n' && currentLineIsBlank)
             {
                 // send a standard http response header
-                _client.println("HTTP/1.1 200 OK");
-                _client.println("Content-Type: text/html");
-                _client.println("Connection: close"); // the connection will be closed after completion of the response
-                _client.println("Refresh: 5");        // refresh the page automatically every 5 sec
-                _client.println();
-                _client.println("<!DOCTYPE HTML>");
-                _client.println("<html>");
+                
                 _client.println(dataString);
-                _client.println("<br />");
-                _client.println("</html>");
                 break;
             }
             if (c == '\n')

@@ -1,12 +1,14 @@
 #include <MAIN.h>
 
-MAINmodule::MAINmodule(int CSpinT, int I2CaddressP, int errLED, int busyLED)
-    : sensorT(CSpinT), sensorP(Wire, I2CaddressP)
+MAINmodule::MAINmodule(int CSpinT, int I2CaddressP, int port, int errLED, int busyLED)
+    : sensorT(CSpinT), sensorP(Wire, I2CaddressP), server(port)
 {
     _errLED = errLED;
     _busyLED = busyLED;
 
     _I2CaddressP = I2CaddressP;
+
+    _port = port;
 }
 
 void MAINmodule::config(int mode)
@@ -28,29 +30,35 @@ void MAINmodule::config(int mode)
     }
 }
 
-void MAINmodule::LANsetup(byte mac, IPAddress ip, int port, int csPinLAN)
-    : server(port)
+void MAINmodule::LANsetup(byte *mac, IPAddress ip, int csPinLAN)
 {
-    Ethernet.init(csPinLAN);
-    Ethernet.begin(mac, ip);
-
-    // Check for Ethernet hardware present
-    if (Ethernet.hardwareStatus() == EthernetNoHardware)
+    if (_port == 0)
     {
-        Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
-        while (true)
+        Serial.println("Kein Ethernet-Port definiert. Definiere Ethernet-Port über den constructor für MAINmodule");
+    }
+    else
+    {
+        Ethernet.init(csPinLAN);
+        Ethernet.begin(mac, ip);
+
+        // Check for Ethernet hardware present
+        if (Ethernet.hardwareStatus() == EthernetNoHardware)
         {
-            delay(1); // do nothing, no point running without Ethernet hardware
+            Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
+            while (true)
+            {
+                delay(1); // do nothing, no point running without Ethernet hardware
+            }
         }
-    }
-    if (Ethernet.linkStatus() == LinkOFF)
-    {
-        Serial.println("Ethernet cable is not connected.");
-    }
+        if (Ethernet.linkStatus() == LinkOFF)
+        {
+            Serial.println("Ethernet cable is not connected.");
+        }
 
-    server.begin();
-    Serial.print("server is at ");
-    Serial.println(Ethernet.localIP());
+        server.begin();
+        Serial.print("server is at ");
+        Serial.println(Ethernet.localIP());
+    }
 }
 
 void MAINmodule::busy()
@@ -130,14 +138,14 @@ void MAINmodule::errorBlink(bool error)
     }
 }
 
-bool MAINmodule::listenForClient()
+bool MAINmodule::clientConnected()
 {
     /*
         This function listens for incoming clients over Ethernet
         Returns 'true' if a client requests a connection and 'false' in any other case
     */
-    _client = server.available()
-    if(_client)
+    _client = server.available();
+    if (_client)
     {
         return true;
     }
@@ -152,43 +160,44 @@ void MAINmodule::printDataLAN(String dataString)
     /*
         This function sends a data string to the connected client via Ethernet
     */
-
     // an http request ends with a blank line
     boolean currentLineIsBlank = true;
-    while (client.connected())
+    while (_client.connected())
     {
-        if (client.available())
+        if (_client.available())
         {
-            char c = client.read();
+            char c = _client.read();
+            Serial.print(c);
             // if you've gotten to the end of the line (received a newline
             // character) and the line is blank, the http request has ended,
             // so you can send a reply
             if (c == '\n' && currentLineIsBlank)
             {
                 // send a standard http response header
-                client.println("HTTP/1.1 200 OK");
-                client.println("Content-Type: text/html");
-                client.println("Connection: close"); // the connection will be closed after completion of the response
-                client.println("Refresh: 5");        // refresh the page automatically every 5 sec
-                client.println();
-                client.println("<!DOCTYPE HTML>");
-                client.println("<html>");
-
-                client.println(dataString)
-                client.println("<br />");
+                _client.println("HTTP/1.1 200 OK");
+                _client.println("Content-Type: text/html");
+                _client.println("Connection: close"); // the connection will be closed after completion of the response
+                _client.println("Refresh: 5");        // refresh the page automatically every 5 sec
+                _client.println();
+                _client.println("<!DOCTYPE HTML>");
+                _client.println("<html>");
+                _client.println(dataString);
+                _client.println("<br />");
+                _client.println("</html>");
+                break;
             }
-            client.println("</html>");
-            break;
-        }
-        if (c == '\n')
-        {
-            // you're starting a new line
-            currentLineIsBlank = true;
-        }
-        else if (c != '\r')
-        {
-            // you've gotten a character on the current line
-            currentLineIsBlank = false;
+            if (c == '\n')
+            {
+                // you're starting a new line
+                currentLineIsBlank = true;
+            }
+            else if (c != '\r')
+            {
+                // you've gotten a character on the current line
+                currentLineIsBlank = false;
+            }
         }
     }
+    delay(1);
+    _client.stop();
 }

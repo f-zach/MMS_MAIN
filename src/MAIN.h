@@ -15,13 +15,14 @@ private:
     long _tMeasurementStart;
     long _tErrLED = 1000;
     bool _errLEDon = false;
+    int _port;
     EthernetClient _client;
     
 
 public:
-    MAINmodule(int CSpinT, int I2CaddressP, int errLED = 5, int busyLED = 6);
+    MAINmodule(int CSpinT, int I2CaddressP, int port = 0, int errLED = 5, int busyLED = 6);
     void config(int mode = 1);
-    void LANsetup(byte mac[], IPAddress ip, int port, int csPinLAN = 15);
+    void LANsetup(byte* mac, IPAddress ip, int csPinLAN = 15);
     bool faultDetection();
     void busy();
     void notBusy();
@@ -29,8 +30,8 @@ public:
     void startTmeasurement();
     float readEnvT();
     float readEnvP();
-    bool listenForClient();
-    void printDataLAN(String dataString)
+    bool clientConnected();
+    void printDataLAN(String dataString);
     float envTemperature;
     float envPressure;
     bool Tmeasuring;

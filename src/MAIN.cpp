@@ -1,5 +1,14 @@
 #include <MAIN.h>
 
+/*
+    Constructor for the main module. Is used to define the CS pin of the Pt100 module and I²C address of the pressure sensor of the main module
+
+    Inputs:     CSpinT          Pin number of the CS pin of the MAX31865 module (Default pin: 24)
+                I2CaddressP     I²C address of the BME280 pressure sensor (Default address: 0x76)
+                port            Port nummer of the ethernet mdoule. set to 0 if not used
+                errLED          Pin number of the "error" indicator LED
+                busyLED         Pin number of the "busy" indicator LED
+*/
 MAINmodule::MAINmodule(int CSpinT, int I2CaddressP, int port, int errLED, int busyLED)
     : sensorT(CSpinT), sensorP(Wire, I2CaddressP), server(port)
 {
@@ -11,6 +20,11 @@ MAINmodule::MAINmodule(int CSpinT, int I2CaddressP, int port, int errLED, int bu
     _port = port;
 }
 
+/*
+    Initialize the main module and configure the measurement mode for the enviromental sensors
+
+    Inputs:     mode            Enable the environmental sensor if 1
+*/
 void MAINmodule::config(int mode)
 {
     pinMode(_errLED, OUTPUT);
@@ -30,6 +44,14 @@ void MAINmodule::config(int mode)
     }
 }
 
+
+/*
+    Initialize the Ethernet connection for use of the module with LAN
+
+    Inputs:     mac         Mac address of the LAN server
+                ip          IP address of the LAN server
+                csPinLAN    CS pin used for the LAN module (Default pin: 15)
+*/
 void MAINmodule::LANsetup(byte *mac, IPAddress ip, int csPinLAN)
 {
     if (_port == 0)
@@ -61,16 +83,28 @@ void MAINmodule::LANsetup(byte *mac, IPAddress ip, int csPinLAN)
     }
 }
 
+
+/*
+    Turn on "busy" LED
+*/
 void MAINmodule::busy()
 {
     digitalWriteFast(_busyLED, HIGH);
 }
 
+
+/*
+    Turn off "busy" LED
+*/
 void MAINmodule::notBusy()
 {
     digitalWriteFast(_busyLED, LOW);
 }
 
+
+/*
+    Start the temperature with the MAX31865 temperature module
+*/
 void MAINmodule::startTmeasurement()
 {
     if (!Tmeasuring)
@@ -82,6 +116,10 @@ void MAINmodule::startTmeasurement()
     }
 }
 
+
+/*
+    Read the temperature from the MAX31865
+*/
 float MAINmodule::readEnvT()
 {
     if ((millis() - _tMeasurementStart) > 65)
@@ -94,6 +132,10 @@ float MAINmodule::readEnvT()
     return envTemperature;
 }
 
+
+/*
+    Read the prressure from the BME280 module
+*/
 float MAINmodule::readEnvP()
 {
     sensorP.readSensor();
@@ -102,6 +144,9 @@ float MAINmodule::readEnvP()
     return envPressure;
 }
 
+/*
+    Detect possible faults and print out error messages
+*/
 bool MAINmodule::faultDetection()
 {
     if (sensorP.begin() != 1)
@@ -115,6 +160,11 @@ bool MAINmodule::faultDetection()
     }
 }
 
+/*
+    Blink the error led if an error ocurred
+
+    Inputs:        error        Boolean for if an error occurred. 'true' to blink "error" LED
+*/
 void MAINmodule::errorBlink(bool error)
 {
     if (error && (millis() - _tErrLED >= 1000))
